@@ -1,0 +1,750 @@
+*lua-guide.txt*                        Nvim
+
+                            NVIM REFERENCE MANUAL
+
+                         NvimでLuaを使うためのガイド
+
+
+                                                目次を見るには |gO| をタイプ。
+
+==============================================================================
+はじめに                                                             *lua-guide*
+
+このガイドではNvimの設定および制御のためのLuaの基本を紹介する。
+Lua以外のNvimの基本 (コマンド、オプション、マッピング、自動コマンド) を
+ある程度知っていることを前提とする。
+なお、これらは |user-manual| で解説されている。
+
+これはすべての機能を列挙した百科事典のようなものではない。
+NvimでLuaを快適に使いはじめるための、最低限のサバイバルキットのように考えてほ
+しい。
+
+Luaプラグインの開発のガイドは |lua-plugin| を参照。
+Lua自体については |luaref| と |lua-concepts| を参照。
+
+------------------------------------------------------------------------------
+APIについて                                                      *lua-guide-api*
+
+このガイドでは、APIであるLuaを介しNvimと対話するさまざまな方法を示す。
+このAPIは3つの層で構成される:
+
+1. Vimから継承された "Vim API":
+   Vimscriptの |Ex-commands|、 |builtin-functions| および |user-function|
+   |vim.cmd()| と |vim.fn| から利用する。
+   詳細は下記の |lua-guide-vimscript| で説明する。
+2. Cで書かれた "Nvim API"
+   |api| を参照。 |vim.api| から利用する。
+3. Luaで書かれたLuaのための "Lua API"
+   `vim.*` 系の関数のうち上で説明されていないものがこれに当てはまる。
+   |lua-stdlib| を参照。
+
+この区別は重要だ。APIの関数はその層から振る舞いを継承する:
+例えば、 Nvim API の関数は引数を省略できない。Lua自体は引数の省略を許容
+(`nil` が渡される) しているにも関わらずだ。
+そして、 Vim API の関数には0オリジンのものがある。Luaの配列は
+既定で1オリジンであるにも関わらずだ。
+
+これにより、新たなAPIを一から作ることなしに、Luaからすべての機能が利用できる。
+そのため、異なる層で機能が重複することは基本的にない。ただし機能や性能に利点が
+ある場合はこの限りではない。例えば |nvim_create_autocmd()| はLuaの関数を直接
+呼び出せるが、 |:autocmd| はそうではない。このように複数の方法がある場合は
+Luaから使う上で便利な方を紹介する。
+
+==============================================================================
+Luaを使う                                                  *lua-guide-using-Lua*
+
+NvimのコマンドラインからLuaのコードを実行するには |:lua| コマンドを使う:
+>vim
+    :lua print("Hello!")
+<
+Note: |:lua| コマンドはそれぞれスコープを持ち、"local"を使って宣言された変数は
+コマンドの外から参照できない。以下はうまくいかない:
+>vim
+    :lua local foo = 1
+    :lua print(foo)
+    " "1" ではなく "nil" を表示する。
+<
+変数の値やテーブルの中身を見るには `:lua=` を使うと便利だ。
+これは `:lua vim.print(...)` と同等だ:
+{訳注: `:lua print(vim.inspect(...))` と等価}
+>vim
+    :lua =package
+<
+外部ファイルのLuaスクリプトを実行するには、Vimscriptのファイルと同様に
+|:source| が使える:
+>vim
+    :source ~/programs/baz/myluafile.lua
+<
+最後に、Vimscriptの中でLuaを使うには
+Luaのコードを |:lua-heredoc| ブロックに入れる:
+>vim
+    lua << EOF
+      local tbl = {1, 2, 3}
+      for k, v in ipairs(tbl) do
+        print(v)
+      end
+    EOF
+<
+------------------------------------------------------------------------------
+起動時にLuaのファイルを使う                                   *lua-guide-config*
+
+Nvimでは `init.vim` もしくは `init.lua` が設定ファイルとして使える。両方同時に
+使うことはできない。このファイルを |config| ディレクトリ
+(`:echo stdpath('config')` で確認) に置く。 `init.vim` の中でLuaを、
+`init.lua` の中でVimscriptを使うこともできる。後者については後ほど解説する。
+
+|startup| 時に他にもスクリプトを自動的に実行したければ、
+'runtimepath' 下の `plugin/` に置く。
+
+------------------------------------------------------------------------------
+Luaのモジュール                                              *lua-guide-modules*
+
+要求時にLuaのファイルを読み込みたいなら、 'runtimepath' 下の `lua/`
+ディレクトリに置くと `require` で読み込めるようになる。
+これはVimscriptの |autoload| に相当する。
+
+以下のディレクトリ構成について考える:
+>
+    ~/.config/nvim
+    |-- after/
+    |-- ftplugin/
+    |-- lua/
+    |   |-- myluamodule.lua
+    |   |-- other_modules/
+    |       |-- anothermodule.lua
+    |       |-- init.lua
+    |-- plugin/
+    |-- syntax/
+    |-- init.vim
+<
+この時、以下のLuaのコードは `myluamodule.lua` を読み込む:
+>lua
+    require("myluamodule")
+<
+`.lua` という拡張子が付いていないことに注意。
+
+同様に、 `other_modules/anothermodule.lua` を読み込むには
+>lua
+    require('other_modules/anothermodule')
+    -- もしくは
+    require('other_modules.anothermodule')
+<
+"サブモジュール" が単なるサブディレクトリであることに注目。
+`.` はパスの区切り文字の `/` に相当する (Windows でも変わらない)。
+
+|init.lua| ファイルはディレクトリの指定のみで読み込める:
+>lua
+    require('other_modules') -- other_modules/init.lua を読み込む
+<
+読み込もうとするモジュールが存在しない場合や構文エラーを含む場合、
+実行中のスクリプトが中断される。そういうエラーは `pcall()` でキャッチできる。
+以下の例は、 `module_with_error` の読み込みを試み、
+成功したらそのモジュールの関数を実行、失敗したらエラーメッセージを表示する:
+>lua
+    local ok, mymod = pcall(require, 'module_with_error')
+    if not ok then
+      print("Module had an error")
+    else
+      mymod.func()
+    end
+<
+|:source| と違い、 |require()| は 'runtimepath' 下の `lua/` ディレクトリの中を
+検索するだけでなく、初回読み込み時にモジュールをキャッシュする。
+`require()` を次に実行しても検索や実行はされず、キャッシュされた値が返る。
+ファイルを再度実行するには手動でキャッシュを削除する必要がある:
+>lua
+    package.loaded['myluamodule'] = nil
+    require('myluamodule')    -- 再度ストレージからモジュールを読み込み、実行
+<
+------------------------------------------------------------------------------
+参照:
+• |lua-module-load|: `require()` がモジュールを探す仕組み
+• |pcall()|
+
+==============================================================================
+Vimのコマンドや関数をLuaから使う                           *lua-guide-vimscript*
+
+Vimのコマンドや関数はすべてLuaから利用できる。
+
+------------------------------------------------------------------------------
+Vimのコマンド                                           *lua-guide-vim-commands*
+
+VimのコマンドをLuaから実行するには、 |vim.cmd()| に文字列として渡す:
+>lua
+    vim.cmd("colorscheme habamax")
+<
+注意点として、特殊文字はバックスラッシュでエスケープする必要がある:
+>lua
+    vim.cmd("%s/\\Vfoo/bar/g")
+<
+別の方法として、リテラル文字列 (|lua-literal| を参照) を二重の角括弧 `[[ ]]`
+で囲むこともできる。
+>lua
+    vim.cmd([[%s/\Vfoo/bar/g]])
+<
+もうひとつの利点として複数行の文字列が扱えるので、複数のコマンドを |vim.cmd()|
+に渡せる:
+>lua
+    vim.cmd([[
+      highlight Error guibg=red
+      highlight link Warning Error
+    ]])
+<
+これは |:lua-heredoc| と対応し、 `init.lua` の中でVimscriptを使うことを可能
+にする。
+
+プログラムによりコマンドを組み立てたいなら、以下の形式が有用だ (すべて上記の対
+応する行と同等):
+>lua
+    vim.cmd.colorscheme("habamax")
+    vim.cmd.highlight({ "Error", "guibg=red" })
+    vim.cmd.highlight({ "link", "Warning", "Error" })
+<
+------------------------------------------------------------------------------
+Vimscriptの関数                                        *lua-guide-vim-functions*
+
+Vimscriptの関数をLuaから呼び出すには |vim.fn| を使う。LuaとVimscriptの間で
+データ型は自動的に変換される:
+>lua
+    print(vim.fn.printf('Hello from %s', 'Lua'))
+
+    local reversed_list = vim.fn.reverse({ 'a', 'b', 'c' })
+    vim.print(reversed_list) -- { "c", "b", "a" }
+
+    local function print_stdout(chan_id, data, name)
+      print(data[1])
+    end
+
+    vim.fn.jobstart('ls', { on_stdout = print_stdout })
+<
+これは |builtin-functions| と |user-function| の両方で機能する。
+
+`#` (ハッシュ) はLuaでは識別子において有効な文字ではない。そのため、
+例えば |autoload| の関数は以下の構文で呼び出す必要がある:
+>lua
+    vim.fn['my#autoload#function']()
+<
+------------------------------------------------------------------------------
+参照:
+• |vimscript-functions|: Vimscriptの関数すべての説明
+• |function-list|: Vimscriptの関数をトピックで分類したもの
+• |:runtime|: 'runtimepath' の中のパターンに一致するLuaスクリプトを実行する
+
+==============================================================================
+変数                                                       *lua-guide-variables*
+
+変数はそれぞれの |variable-scope| に対応する以下のラッパーを用いて
+読み取り・代入できる:
+
+• |vim.g|:   グローバル変数 (|g:|)
+• |vim.b|:   現在のバッファの変数 (|b:|)
+• |vim.w|:   現在のウィンドウの変数 (|w:|)
+• |vim.t|:   現在のタブページの変数 (|t:|)
+• |vim.v|:   Vimが定義する変数 (|v:|)
+• |vim.env|: 環境変数
+
+データ型は自動的に変換される。 例:
+>lua
+    vim.g.some_global_variable = {
+      key1 = "value",
+      key2 = 300
+    }
+
+    vim.print(vim.g.some_global_variable)
+    --> { key1 = "value", key2 = 300 }
+<
+ラッパーのインデックスを指定すると、
+バッファ (番号)、ウィンドウ (|window-ID|)、タブページが指定できる:
+>lua
+    vim.b[2].myvar = 1               -- バッファ番号 2の myvar に代入
+    vim.w[1005].myothervar = true    -- ウィンドウID 1005の myothervar に代入
+<
+変数名にLuaの識別子に使えない文字が含まれることがある。
+その場合には以下の構文を使う。
+>lua
+    vim.g['my#variable'] = 1
+<
+注意点として、配列系の変数の要素を直接変更することはできない。
+以下はうまくいかない:
+>lua
+    vim.g.some_global_variable.key2 = 400
+    vim.print(vim.g.some_global_variable)
+    --> { key1 = "value", key2 = 300 }
+<
+代わりに、中間的なLuaのテーブルを作り、それを変更する必要がある:
+>lua
+    local temp_table = vim.g.some_global_variable
+    temp_table.key2 = 400
+    vim.g.some_global_variable = temp_table
+    vim.print(vim.g.some_global_variable)
+    --> { key1 = "value", key2 = 400 }
+<
+変数を削除するには `nil` を代入する:
+>lua
+    vim.g.myvar = nil
+<
+------------------------------------------------------------------------------
+参照:
+• |lua-vim-variables|
+
+==============================================================================
+オプション                                                   *lua-guide-options*
+
+Luaを使ったオプション (|options|) の設定には2つの方法がある。
+
+------------------------------------------------------------------------------
+vim.opt
+
+グローバルおよびローカルのオプションの設定に便利なのは
+`vim.opt` とその関連:
+
+• |vim.opt|:        |:set| のように振る舞う。
+• |vim.opt_global|: |:setglobal| のように振る舞う。
+• |vim.opt_local|:  |:setlocal| のように振る舞う。
+
+例えば、以下のVimscriptのコマンド
+>vim
+    set smarttab
+    set nosmarttab
+<
+これは以下と同等だ。
+>lua
+    vim.opt.smarttab = true
+    vim.opt.smarttab = false
+<
+特に、Luaのテーブルを通じてリスト・連想配列系のオプションを扱う簡単な方法を
+提供する:
+以下の代わりに
+>vim
+    set wildignore=*.o,*.a,__pycache__
+    set listchars=space:_,tab:>~
+    set formatoptions=njt
+<
+以下が使える。
+>lua
+    vim.opt.wildignore = { '*.o', '*.a', '__pycache__' }
+    vim.opt.listchars = { space = '_', tab = '>~' }
+    vim.opt.formatoptions = { n = true, j = true, t = true }
+<
+このラッパーはVimscriptの |:set+=|、 |:set^=|、 |:set-=| に相当するメソッドも
+提供する:
+>lua
+    vim.opt.shortmess:append({ I = true })
+    vim.opt.wildignore:prepend('*.o')
+    vim.opt.whichwrap:remove({ 'b', 's' })
+<
+その代わり、オプションの値を直接参照することはできず、 |vim.opt:get()| を
+使う必要がある:
+>lua
+    print(vim.opt.smarttab)
+    --> {...} (大きなテーブル)
+    print(vim.opt.smarttab:get())
+    --> false
+    vim.print(vim.opt.listchars:get())
+    --> { space = '_', tab = '>~' }
+<
+------------------------------------------------------------------------------
+vim.o
+
+そのため、より直接変数のように扱える `vim.o` と関連機能がある。
+`:echo &number` と `:let &listchars='space:_,tab:>~'`
+でオプションの取得、代入をするのに似ている:
+
+• |vim.o|:  |:set| のように振る舞う。
+• |vim.go|: |:setglobal| のように振る舞う。
+• |vim.bo|: バッファ固有のオプション用。
+• |vim.wo|: ウィンドウ固有のオプション用。2重にインデックスできる。
+
+例:
+>lua
+    vim.o.smarttab = false -- :set nosmarttab
+    print(vim.o.smarttab)
+    --> false
+    vim.o.listchars = 'space:_,tab:>~' -- :set listchars='space:_,tab:>~'
+    print(vim.o.listchars)
+    --> 'space:_,tab:>~'
+    vim.o.isfname = vim.o.isfname .. ',@-@' -- :set isfname+=@-@
+    print(vim.o.isfname)
+    --> '@,48-57,/,.,-,_,+,,,#,$,%,~,=,@-@'
+    vim.bo.shiftwidth = 4 -- :setlocal shiftwidth=4
+    print(vim.bo.shiftwidth)
+    --> 4
+<
+変数と同様、バッファオプションにはバッファ番号、ウィンドウオプションには
+|window-ID| が指定できる。数が指定されない場合現在のバッファないし
+ウィンドウが使われる:
+>lua
+    vim.bo[4].expandtab = true -- バッファ 4 の expandtab を true にする
+    vim.wo.number = true       -- 現在のウィンドウの number を true にする
+    vim.wo[0].number = true    -- 上と等価
+    vim.wo[0][0].number = true -- 現在のウィンドウとバッファのみ number を
+                               -- true にする
+    print(vim.wo[0].number)    --> true
+<
+------------------------------------------------------------------------------
+参照:
+• |lua-options|
+
+==============================================================================
+マッピング                                                  *lua-guide-mappings*
+
+キーシーケンスに対しVimのコマンドやLuaの関数を割り当てることができる。
+
+------------------------------------------------------------------------------
+マッピングを作る                                        *lua-guide-mappings-set*
+
+マッピングは |vim.keymap.set()| で作れる。
+この関数は3つの省略できない引数を取る:
+• {mode}: モードを表す接頭辞の文字列ないしそのテーブル
+  接頭辞は、 |:map-modes| に列挙されたもの、もしくは |:map!| に相当する "!"、
+  |:map| に相当する空文字列。
+• {lhs}:  マッピングを発動するキーシーケンスの文字列
+• {rhs}:  {lhs} が入力されたときに実行する、Vimのコマンドを含む文字列ないし
+  Luaの関数
+  空文字列は、キーを無効化する |<Nop>| と同等。
+
+例:
+>lua
+    -- ノーマルモードのVimのコマンドへのマッピング
+    vim.keymap.set('n', '<Leader>ex1', '<cmd>echo "Example 1"<cr>')
+    -- ノーマルモードとコマンドラインモードのVimのコマンドへのマッピング
+    vim.keymap.set({'n', 'c'}, '<Leader>ex2', '<cmd>echo "Example 2"<cr>')
+    -- ノーマルモードのLuaの関数へのマッピング
+    vim.keymap.set('n', '<Leader>ex3', vim.treesitter.start)
+    -- ノーマルモードのLuaの関数へのマッピング 関数に引数を渡す場合
+    vim.keymap.set('n', '<Leader>ex4', function() print('Example 4') end)
+<
+以下のようにLuaモジュールの関数にマップできる。
+>lua
+    vim.keymap.set('n', '<Leader>pl1', require('plugin').action)
+<
+これだとマッピングの定義時にプラグインが読み込まれることに注意。
+|autoload| の関数のように、マッピングの実行時に読み込みたいなら、
+全体を `function() end` で包む:
+>lua
+    vim.keymap.set('n', '<Leader>pl2', function() require('plugin').action() end)
+<
+第4引数にはマッピングの挙動を指定するキーを含んだテーブルが指定できる。
+キーは主に |:map-arguments| に記載されているもの。
+特に有用なもの:
+• `buffer`: 指定された場合、指定された番号のバッファのみにマッピングを設定する。
+  `0` と `true` は現在のバッファを意味する。 >lua
+    -- 現在のバッファにマッピングを設定
+    vim.keymap.set('n', '<Leader>pl1', require('plugin').action, { buffer = true })
+    -- バッファ番号4にマッピングを設定
+    vim.keymap.set('n', '<Leader>pl1', require('plugin').action, { buffer = 4 })
+<
+• `silent`: `true` であれば、エラーメッセージなどの出力を抑制する。 >lua
+    vim.keymap.set('n', '<Leader>pl1', require('plugin').action, { silent = true })
+<
+• `expr`: `true` であれば {rhs} の返り値を入力として扱う。
+  特殊な |keycodes| は自動的に変換される。例えば、以下のマッピングは
+  ポップアップメニューを開いている時にのみ <down> を <c-n> に置き換える: >lua
+    vim.keymap.set('c', '<down>', function()
+      if vim.fn.pumvisible() == 1 then return '<c-n>' end
+      return '<down>'
+    end, { expr = true })
+<
+• `desc`: |:map| などでマッピングを列挙するときに表示する文字列
+  Luaの関数の場合は以下の形式で表示されてしまうので特に有用。
+  `Lua: <number> <source file>:<line>`
+  {訳注:
+  `<Lua {数}: {ファイル}:{行}>` }
+  そのためプラグインが提供するマッピングには常にこれを使用すべきである。 >lua
+    vim.keymap.set('n', '<Leader>pl1', require('plugin').action,
+      { desc = 'Execute action from plugin' })
+<
+• `remap`: 既定ではマッピングは非再帰的だ。つまり |vim.keymap.set()| は
+  |:noremap| のように振る舞う。 {rhs} もマッピングとして展開するべきなら
+  `remap = true` を設定する: >lua
+    vim.keymap.set('n', '<Leader>ex1', '<cmd>echo "Example 1"<cr>')
+    -- より短いマッピングを追加
+    vim.keymap.set('n', 'e', '<Leader>ex1', { remap = true })
+<
+  Note: |<Plug>| 系のマッピングは `remap` の値に関わず常に展開される: >lua
+    vim.keymap.set('n', '[%', '<Plug>(MatchitNormalMultiBackward)')
+<
+------------------------------------------------------------------------------
+マッピングを削除する                                    *lua-guide-mappings-del*
+
+特定のマッピングを削除するには |vim.keymap.del()| が使える:
+>lua
+    vim.keymap.del('n', '<Leader>ex1')
+    vim.keymap.del({'n', 'c'}, '<Leader>ex2', {buffer = true})
+<
+------------------------------------------------------------------------------
+参照:
+• `vim.api.`|nvim_get_keymap()|:     すべてのグローバルのマッピングを返す。
+• `vim.api.`|nvim_buf_get_keymap()|: あるバッファのすべてのマッピングを返す。
+
+==============================================================================
+自動コマンド                                            *lua-guide-autocommands*
+
+自動コマンド (|autocommand|) とは、 |events| が発火したとき
+(ファイルの読み込み・書き込み、ウィンドウの作成など) に実行される
+VimのコマンドないしLuaの関数のことだ。
+これらは Nvim API を通じてLuaから利用できる。
+
+------------------------------------------------------------------------------
+自動コマンドを作る                                *lua-guide-autocommand-create*
+
+自動コマンドは `vim.api.`|nvim_create_autocmd()| で作る。
+これは2つの省略できない引数を取る:
+• {event}: コマンドや関数を発動するイベントの文字列ないしそのテーブル
+• {opts}:  イベントが発火したときの挙動を指定するキーを含んだテーブル
+
+特に重要なオプションは:
+
+• `pattern`:  |autocmd-pattern| の文字列ないしそのテーブル
+            Note: `$HOME` のような環境変数や `~` は展開されない。
+            `vim.fn.`|expand()| などを使う必要がある。
+• `command`:  Vimのコマンドの文字列
+• `callback`: Luaの関数
+
+`command` もしくは `callback` のどちらか一方を指定する必要がある。 `pattern`
+を省略すると、 `pattern = '*'` とみなされる。
+例:
+>lua
+    vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
+      pattern = {"*.c", "*.h"},
+      command = "echo 'Entering a C or C++ file'",
+    })
+
+    -- Luaの関数を使った同様の自動コマンド
+    vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
+      pattern = {"*.c", "*.h"},
+      callback = function() print("Entering a C or C++ file") end,
+    })
+
+    -- MyPlugin が発火させる User イベント
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MyPlugin",
+      callback = function() print("My Plugin Works!") end,
+    })
+<
+Lua関数は、発火した自動コマンドについての情報を含むテーブルを引数として
+呼び出される。
+特に有用なもの:
+• `match`: `pattern` に一致した文字列 (|<amatch>| を参照)
+• `buf`:   イベントが発火したバッファの番号 (|<abuf>| を参照)
+• `file`:  イベントが発火したバッファのファイル名 (|<afile>| を参照)
+• `data`:  一部の自動コマンドにおいて用いられる、追加の情報のテーブル
+
+これを使うと、例えばファイルタイプごとにバッファローカルなマッピングを定義
+できる:
+>lua
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "lua",
+      callback = function(args)
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, { buffer = args.buf })
+      end
+    })
+<
+そのため、callback が引数を解釈するなら、
+エラーを避けるには `function() end` で包む必要がある:
+>lua
+    vim.api.nvim_create_autocmd('TextYankPost', {
+      callback = function() vim.hl.on_yank() end
+    })
+<
+Luaの関数定義では使わない引数を省略できるので、
+これは `function(args) ... end` と同等だ。
+
+パターンを使う代わりに、 `buffer` を使いバッファローカルな自動コマンド
+(|autocmd-buflocal| を参照) を作ることもできる。その場合 `pattern` は使えない:
+>lua
+    -- 現在のバッファに自動コマンドを設定する
+    vim.api.nvim_create_autocmd("CursorHold", {
+      buffer = 0,
+      callback = function() print("hold") end,
+    })
+
+    -- バッファ番号33に自動コマンドを設定する
+    vim.api.nvim_create_autocmd("CursorHold", {
+      buffer = 33,
+      callback = function() print("hold") end,
+    })
+<
+マッピングと同様、 `desc` により説明を追加でき、そうすべきである:
+>lua
+    vim.api.nvim_create_autocmd('TextYankPost', {
+      callback = function() vim.hl.on_yank() end,
+      desc = "Briefly highlight yanked text"
+    })
+<
+最後に、 `group` キーを使うと自動コマンドをグループ化できる。
+詳細は次の節で解説する。
+
+------------------------------------------------------------------------------
+自動コマンドのグループ化                          *lua-guide-autocommands-group*
+
+自動コマンドのグループを使うと関連する自動コマンドをまとめられる。
+|autocmd-groups| を参照。
+自動コマンドの整理、特に重複を防ぐのに有用だ。
+
+グループは `vim.api.`|nvim_create_augroup()| で作れる。この関数は
+2つの省略できない引数を取る:
+• {name}: グループの名前の文字列
+• {opts}: グループが既に存在する場合に消去 (そのグループの自動コマンドを
+  すべて削除) するかを指定するテーブル
+
+この関数はグループのIDを返す。グループはIDもしくは名前で指定できる。
+
+例えば、再読み込みされる可能性のあるファイルで自動コマンドを定義する場合、
+Vimscriptでは以下のように書くだろう:
+>vim
+    augroup vimrc
+      " vimrc 自動コマンドをすべて削除する
+      autocmd!
+      au BufNewFile,BufRead *.html set shiftwidth=4
+      au BufNewFile,BufRead *.html set expandtab
+    augroup END
+<
+これは以下のLuaのコードと同等だ:
+>lua
+    local mygroup = vim.api.nvim_create_augroup('vimrc', { clear = true })
+    vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+      pattern = '*.html',
+      group = mygroup,
+      command = 'set shiftwidth=4',
+    })
+    vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+      pattern = '*.html',
+      group = 'vimrc',  -- group=mygroup と同等
+      command = 'set expandtab',
+    })
+<
+自動コマンドのグループは名前ごとに一意なので、別のファイルなどで再び使用できる:
+>lua
+    local mygroup = vim.api.nvim_create_augroup('vimrc', { clear = false })
+    vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+      pattern = '*.c',
+      group = mygroup,
+      command = 'set noexpandtab',
+    })
+<
+------------------------------------------------------------------------------
+自動コマンドを削除する                           *lua-guide-autocommands-delete*
+
+自動コマンドの削除には `vim.api.`|nvim_clear_autocmds()| が使える。この関数は
+対象の自動コマンドを表現するテーブルを引数に取る:
+>lua
+    -- BufEnter と InsertLeave の自動コマンドを削除
+    vim.api.nvim_clear_autocmds({event = {"BufEnter", "InsertLeave"}})
+
+    -- "*.py" のパターンを使う自動コマンドを削除
+    vim.api.nvim_clear_autocmds({pattern = "*.py"})
+
+    -- "scala" グループの自動コマンドを削除
+    vim.api.nvim_clear_autocmds({group = "scala"})
+
+    -- 現在のバッファの ColorScheme 自動コマンドを削除
+    vim.api.nvim_clear_autocmds({event = "ColorScheme", buffer = 0 })
+<
+Note: グループに含まれている自動コマンドは、たとえあるオプションが一致しても
+`group` を指定しないと削除できない。
+
+------------------------------------------------------------------------------
+参照
+• |nvim_get_autocmds()|:  一致する自動コマンドをすべて返す。
+• |nvim_exec_autocmds()|: 一致する自動コマンドをすべて実行する。
+
+==============================================================================
+ユーザコマンド                                              *lua-guide-commands*
+
+ユーザコマンド (|user-commands|) とは、VimscriptやLuaの関数を呼び出す
+カスタムのコマンドである。組み込みのコマンドと同様、
+引数の指定、範囲の指定、引数のカスタム補完ができる。
+高度な内容かつ主にプラグインに有用な内容なので、ここでは基本のみ解説する。
+
+------------------------------------------------------------------------------
+ユーザコマンドを作る                                 *lua-guide-commands-create*
+
+ユーザコマンドは |nvim_create_user_command()| で作れる。
+この関数は3つの省略できない引数を取る:
+• コマンドの名前の文字列 (組み込みのコマンドと区別するため、
+  大文字で始める必要がある)
+• コマンドを呼び出したときに実行するVimのコマンドの文字列ないしLuaの関数
+• |command-attributes| のテーブル
+  さらに以下も指定できる
+  • `desc`: コマンドを説明する文字列
+  • `force`: コマンドを上書きしないためには `false` にする。
+  • `preview`: |:command-preview| に使われるLuaの関数
+
+例:
+>lua
+    vim.api.nvim_create_user_command('Test', 'echo "It works!"', {})
+    vim.cmd.Test()
+    --> It works!
+<
+第3引数は指定する属性がなくとも必須であることに注意。
+
+Luaの関数はコマンドの引数や修飾子を含むテーブルを引数として呼び出される。
+特に重要なもの:
+• `name`:  コマンド名の文字列
+• `fargs`: 空白で区切った引数を含むテーブル (|<f-args>| を参照)
+• `bang`:  コマンドが `!` を付けて実行されたなら `true` (|<bang>| を参照)
+• `line1`: コマンド範囲の最初の行番号 (|<line1>| を参照)
+• `line2`: コマンド範囲の最後の行番号 (|<line2>| を参照)
+• `range`: コマンド範囲を指定した要素の数: 0、1、もしくは2 (|<range>| を参照)
+• `count`: 与えられたカウント (|<count>| を参照)
+• `smods`: コマンド修飾子を含むテーブル (|<mods>| を参照)
+
+例:
+>lua
+    vim.api.nvim_create_user_command('Upper',
+      function(opts)
+        print(string.upper(opts.fargs[1]))
+      end,
+      { nargs = 1 })
+
+    vim.cmd.Upper('foo')
+    --> FOO
+<
+`complete` 属性には |:command-complete| に列挙されたものに加え、
+Luaの関数が指定できる。 >lua
+
+    vim.api.nvim_create_user_command('Upper',
+      function(opts)
+        print(string.upper(opts.fargs[1]))
+      end,
+      { nargs = 1,
+        complete = function(ArgLead, CmdLine, CursorPos)
+          -- 補完候補をリスト的なテーブルとして返す
+          return { "foo", "bar", "baz" }
+        end,
+    })
+<
+バッファローカルなユーザコマンドは `vim.api.`|nvim_buf_create_user_command()|
+で作る。第1引数はバッファ番号 (`0` の場合は現在のバッファ)、
+残りの引数は |nvim_create_user_command()| と同じ:
+>lua
+    vim.api.nvim_buf_create_user_command(0, 'Upper',
+      function(opts)
+        print(string.upper(opts.fargs[1]))
+      end,
+      { nargs = 1 })
+<
+------------------------------------------------------------------------------
+ユーザコマンドを削除する                             *lua-guide-commands-delete*
+
+ユーザコマンドは `vim.api.`|nvim_del_user_command()| で削除できる。
+コマンド名を引数に取る:
+>lua
+    vim.api.nvim_del_user_command('Upper')
+<
+バッファローカルなコマンドを削除するには
+`vim.api.`|nvim_buf_del_user_command()| を使う。
+第1引数にバッファ番号 (`0` の場合は現在のバッファ)、第2引数にコマンド名を取る:
+>lua
+    vim.api.nvim_buf_del_user_command(4, 'Upper')
+<
+==============================================================================
+クレジット                                                   *lua-guide-credits*
+このガイドは nanotee さんのLuaガイド:
+https://github.com/nanotee/nvim-lua-guide
+を元にしています。
+
+@nanotee さんありがとうございます!
+
+vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:
