@@ -82,7 +82,7 @@ $ git push -u origin my-translation
 - [x] job_control.txt
 - [ ] lsp.txt
 - [ ] lua-bit.txt
-- [ ] lua-guide.txt
+- [x] lua-guide.txt
 - [ ] lua.txt 🚧(作業中)
 - [x] luaref.txt
 - [ ] luvref.txt
