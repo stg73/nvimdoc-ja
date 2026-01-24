@@ -28,7 +28,7 @@ Structured Query Language (SQL) はリレーショナルデータベースと対
 	4.3.4 ビュー補完			|sql-completion-views|
     4.4 補完のカスタマイズ			|sql-completion-customization|
     4.5 SQL 関連のマップ			|sql-completion-maps|
-    4.6 他のファイルタイプのファイル内で使うには|sql-completion-filetypes|
+    4.6 他のファイルタイプのファイル内で使うには |sql-completion-filetypes|
 
 ==============================================================================
 1. 移動						*sql-navigation*
@@ -81,7 +81,7 @@ matchit プラグインはローカル変数 b:match_words を定義すること
     when not matched
     when matched
 
-    create[ or replace] procedure|function|event
+    create[ or replace] procedure |function|event
     returns
 
 
@@ -173,7 +173,7 @@ g:ftplugin_sql_objects の既定値は以下の通りです: >
 
 'define' に以下の正規表現を設定することにより、マクロ定義を見つけるための Vim
 の機能に対応しています: >
-    \c\<\(VARIABLE\|DECLARE\|IN\|OUT\|INOUT\)\>
+    \c\<\(VARIABLE\ |DECLARE\|IN\ |OUT\|INOUT\)\>
 
 この正規表現は以下のようなコードに対応しています: >
     CREATE VARIABLE myVar1 INTEGER;

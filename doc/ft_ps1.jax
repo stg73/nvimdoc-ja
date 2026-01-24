@@ -53,7 +53,7 @@ powershell の `:compiler` スクリプトは、 |:make| が PowerShell でス�
 
 ☆キーワード検索                                                *ps1-keyword*
 
-PowerShell の Get-Help を利用してキーワードの検索をするには、|K| キーを押下す
+PowerShell の Get-Help を利用してキーワードの検索をするには、 |K| キーを押下す
 る。より便利にページングしたい場合は、多数の Linux ディストリビューションや
 macOS に同梱されているページャの `less` をインストールすること。
 

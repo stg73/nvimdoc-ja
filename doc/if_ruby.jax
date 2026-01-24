@@ -28,7 +28,7 @@ Rubyのホームページは https://www.ruby-lang.org/ である。ここでRub
 			ンド同様にドット '.' がデフォルトである。詳細について
 			は |:let-heredoc| を参照。
 
-			この形式の|:ruby|コマンドは主にVIM scriptにRubyコード
+			この形式の |:ruby|コマンドは主にVIM scriptにRubyコード
 			を埋め込むのに便利である。
 
 VIM script の例: >
