@@ -28,7 +28,7 @@ APIを構成しています。
 Module conflicts are resolved by "last wins".  For example if both of these
 are on 'runtimepath':
 モジュールの衝突は、"last wins"によって解決されます。
-例として、以下の'runtimepath'両方が衝突したなら、
+例として、以下の 'runtimepath'両方が衝突したなら、
     runtime/lua/foo.lua
     ~/.config/nvim/lua/foo.lua
 then `require('foo')` loads "~/.config/nvim/lua/foo.lua", and
@@ -51,17 +51,17 @@ effective 'runtimepath' value.  Adjustment happens whenever 'runtimepath' is
 changed.  `package.path` is adjusted by simply appending `/lua/?.lua` and
 `/lua/?/init.lua` to each directory from 'runtimepath' (`/` is actually the
 first character of `package.config`).
-Nvimは、効果的な'runtimepath'の値に従って、自動的に`package.path` と
-`package.cpath`を調整します。'runtimepath'が変更されたときはいつでも、
+Nvimは、効果的な 'runtimepath'の値に従って、自動的に`package.path` と
+`package.cpath`を調整します。 'runtimepath'が変更されたときはいつでも、
 調整が発生します。
-`package.path`は、'runtimepath'(`/`は、有効な`package.config`の最初の文字)の
+`package.path`は、 'runtimepath'(`/`は、有効な`package.config`の最初の文字)の
 各ディレクトリに、単純な`/lua/?.lua`と`/lua/?/init.lua`の追加によって調整されます。
 
 Similarly to `package.path`, modified directories from 'runtimepath' are also
 added to `package.cpath`.  In this case, instead of appending `/lua/?.lua` and
 `/lua/?/init.lua` to each runtimepath, all unique `?`-containing suffixes of
 the existing `package.cpath` are used.  Example:
-`package.path`に似て、'runtimepath'から修正されたディレクトリもまた、
+`package.path`に似て、 'runtimepath'から修正されたディレクトリもまた、
 `package.cpath`に追加されます。この場合、各ランタイムパスごとに`/lua/?.lua`と
 `/lua/?/init.lua` を追加する代わりに、既存の`package.cpath`を含むユニークな`?`
 サフィックスがすべて使用されます。
@@ -125,10 +125,10 @@ Note:
   added and reordering `package.path`/`package.cpath` content if 'runtimepath'
   was reordered.
   'runtimepath'の更新を追跡するために、更新前に追加したパスは記憶され、
-  そして次の更新時に削除されます。そして新しい'runtimepath'に由来する
+  そして次の更新時に削除されます。そして新しい 'runtimepath'に由来する
   すべてのパスは上述のように付加されます。
-  これにより、パスが'runtimepath'から削除されたとき削除を許可し、パスを追加
-  されたときはパスを追加し、'runtimepath'が再整理されたなら、
+  これにより、パスが 'runtimepath'から削除されたとき削除を許可し、パスを追加
+  されたときはパスを追加し、 'runtimepath'が再整理されたなら、
   `package.path`/`package.cpath`を再整理します。
 
 - Although adjustments happen automatically, Nvim does not track current
@@ -136,7 +136,7 @@ Note:
   paths from there you can set 'runtimepath' to trigger an update:
   適用は自動的に発生するけれど、Nvimは、現在の`package.path` または `package.cpath`の
   値を追跡しません。
-  もしいくつかのパスの削除が起こったとき、更新トリガとして'runtimepath'をセットできます。
+  もしいくつかのパスの削除が起こったとき、更新トリガとして 'runtimepath'をセットできます。
       let &runtimepath = &runtimepath
 
 - Skipping paths from 'runtimepath' which contain semicolons applies both to
@@ -146,7 +146,7 @@ Note:
   'runtimepath'からセミコロンを含むパスをスキップすることは、
   `package.path` と `package.cpath`の両方に適用されます。
   シェルで書かれた良くないプラグインのいくつかは、セミコロンを含むパスは動かない
-  かもしれないため、一切'runtimepath'に入れないほうが良いです。
+  かもしれないため、一切 'runtimepath'に入れないほうが良いです。
 
 ------------------------------------------------------------------------------
 LUA PLUGIN EXAMPLE					*lua-require-example*
@@ -455,7 +455,7 @@ is equivalent to the Lua chunk >
 
 You can use `v:lua` in "func" options like 'tagfunc', 'omnifunc', etc.
 For example consider the following Lua omnifunc handler: >
-"func"オプション内で、'tagfunc','omnifunc'などのように、
+"func"オプション内で、 'tagfunc','omnifunc'などのように、
 `v:lua`を使用できます。
 例として、Luaのオムニ補完ハンドラについて考えてみましょう。
 
@@ -675,7 +675,7 @@ doesn't work yet for some filetypes like "cpp") Currently, the parser will be
 retained for the lifetime of a buffer but this is subject to change. A plugin
 should keep a reference to the parser object as long as it wants incremental
 updates.
-`bufnr=0`は現在のバッファのために使われます。`lang`は標準で'filetype'に
+`bufnr=0`は現在のバッファのために使われます。`lang`は標準で 'filetype'に
 なります（これはまだ"cpp"のようないくつかのファイルタイプでは動作しません）。
 現在、バッファの生存時間のあいだは保持されますが、変更される可能性があります。
 プラグインは、増分更新を必要とするあいだは、パーサオブジェクトへの参照を保持し続ける
