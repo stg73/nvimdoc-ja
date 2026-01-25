@@ -59,7 +59,7 @@ Adaファイルを読込む前に、コマンドラインで ":" とこれらの
 "let" コマンドを追加すれば、これらのオプション設定を永続化することができる。
 
 このモードは遅いコンピュータ(90MHz)上でも高速に動作するが、もしもパフォーマン
-スが受け入れられないほど低いようならば、|g:ada_withuse_ordinary|を有効化する。
+スが受け入れられないほど低いようならば、 |g:ada_withuse_ordinary|を有効化する。
 
 |g:ada_folding|がセットされていると、構文による折り畳み命令(|fold-syntax|)が追
 加される。
@@ -229,7 +229,7 @@ DEC ADA オブジェクト ~
 
 							     *g:decada.Make()*
 g:decada.Make()		関数
-		|g:decada.Make_Command|を呼び出し、結果を|quickfix|ウィンドウ
+		|g:decada.Make_Command|を呼び出し、結果を |quickfix|ウィンドウ
 		に表示する。
 
 							*g:decada.Unit_Name()*
@@ -398,14 +398,14 @@ g:gnat			    オブジェクト
 		GNATコンパイラを管理するコントロールオブジェクト。このオブジェ
 		クトは最初にAdaのソースコードが読み込まれたときに、
 		|g:ada_default_compiler|が "gnat" に設定されているならば作成さ
-		れる。詳しくは|gnat_members|を参照。
+		れる。詳しくは |gnat_members|を参照。
 
 								    *g:decada*
 g:decada		      オブジェクト
 		Dec Adaコンパイラを管理するコントロールオブジェクト。このオブ
 		ジェクトは最初にAdaのソースコードが読み込まれたときに、
 		|g:ada_default_compiler|が "decada" に設定されているならば作成
-		される。詳しくは|decada_members|を参照。
+		される。詳しくは |decada_members|を参照。
 
 ------------------------------------------------------------------------------
 5.4 定数 ~
@@ -428,7 +428,7 @@ g:ada#Comment		文字列
 							      *g:ada#Keywords*
 g:ada#Keywords		辞書のリスト
 		キーワード、属性などのリスト。オムニ補完で用いられる形式。詳し
-		くは|complete-items|を参照。
+		くは |complete-items|を参照。
 
 							   *g:ada#Ctags_Kinds*
 g:ada#Ctags_Kinds	リストの辞書

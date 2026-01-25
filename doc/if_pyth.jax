@@ -245,7 +245,7 @@ vim.current						*python-current*
 	最後のものに関しては、若干の説明が必要でしょう。:python、:pyfileコマン
 	ドで、範囲が指定された場合、この行の範囲は、"現在の範囲" として扱われ
 	ます。範囲はバッファに少し似ていますが、全てのアクセスは行のサブセット
-	に制限されます。詳細は|python-range|を参照してください。
+	に制限されます。詳細は |python-range|を参照してください。
 
 	Note: vim.current.{buffer,window,tabpage} に値を代入するときはその値が
 	有効なオブジェクト(|python-buffer|、 |python-window| 、 |python-tabpage| )
@@ -300,9 +300,9 @@ Pythonからの出力					*python-output*
 				  *python3-directory* *pythonx-directory*
 Python における 'runtimepath' の処理			*python-special-path*
 
-Python では、'runtimepath' のパスのリストを使う代わりに、vim.VIM_SPECIAL_PATH
+Python では、 'runtimepath' のパスのリストを使う代わりに、vim.VIM_SPECIAL_PATH
 という特別なディレクトリが使われます。このディレクトリが sys.path 内で使われる
-とき、そして vim.path_hooks が sys.path_hooks 内で使われるとき、'runtimepath'
+とき、そして vim.path_hooks が sys.path_hooks 内で使われるとき、 'runtimepath'
 の各パス {rtp} に対して {rtp}/python3 と {rtp}/pythonx のモジュールがロードさ
 れます。
 

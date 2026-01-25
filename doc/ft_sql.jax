@@ -28,7 +28,7 @@ Structured Query Language (SQL) はリレーショナルデータベースと対
 	4.3.4 ビュー補完			|sql-completion-views|
     4.4 補完のカスタマイズ			|sql-completion-customization|
     4.5 SQL 関連のマップ			|sql-completion-maps|
-    4.6 他のファイルタイプのファイル内で使うには|sql-completion-filetypes|
+    4.6 他のファイルタイプのファイル内で使うには |sql-completion-filetypes|
 
 ==============================================================================
 1. 移動						*sql-navigation*

@@ -21,14 +21,14 @@ Lua5.1はNvimにビルトインされており、いつでも利用可能です�
 Nvim includes a "standard library" |lua-stdlib| for Lua.  It complements the
 "editor stdlib" (|functions| and Ex commands) and the |API|, all of which can
 be used from Lua code.
-Nvimは、Luaのために、|lua-stdlib| "標準"ライブラリを含んでいます。
+Nvimは、Luaのために、 |lua-stdlib| "標準"ライブラリを含んでいます。
 これは、Luaから使用できるすべての"エディタ標準ライブラリ"(関数とExコマンド)、そして
 APIを構成しています。
 
 Module conflicts are resolved by "last wins".  For example if both of these
 are on 'runtimepath':
 モジュールの衝突は、"last wins"によって解決されます。
-例として、以下の'runtimepath'両方が衝突したなら、
+例として、以下の 'runtimepath'両方が衝突したなら、
     runtime/lua/foo.lua
     ~/.config/nvim/lua/foo.lua
 then `require('foo')` loads "~/.config/nvim/lua/foo.lua", and
@@ -40,7 +40,7 @@ with some extra features.  See |lua-require-example| for a walkthrough.
 NvimがどのようにLuaモジュールをロードするかを理解するために、
 |lua-require|を確認してください。
 規約は、Vimスクリプトの規約に似ていますが、いくつかの追加機能があります。
-ガイドとしては、|lua-require-example|を確認してください。
+ガイドとしては、 |lua-require-example|を確認してください。
 
 ==============================================================================
 Importing Lua modules					*lua-require*
@@ -51,17 +51,17 @@ effective 'runtimepath' value.  Adjustment happens whenever 'runtimepath' is
 changed.  `package.path` is adjusted by simply appending `/lua/?.lua` and
 `/lua/?/init.lua` to each directory from 'runtimepath' (`/` is actually the
 first character of `package.config`).
-Nvimは、効果的な'runtimepath'の値に従って、自動的に`package.path` と
-`package.cpath`を調整します。'runtimepath'が変更されたときはいつでも、
+Nvimは、効果的な 'runtimepath'の値に従って、自動的に`package.path` と
+`package.cpath`を調整します。 'runtimepath'が変更されたときはいつでも、
 調整が発生します。
-`package.path`は、'runtimepath'(`/`は、有効な`package.config`の最初の文字)の
+`package.path`は、 'runtimepath'(`/`は、有効な`package.config`の最初の文字)の
 各ディレクトリに、単純な`/lua/?.lua`と`/lua/?/init.lua`の追加によって調整されます。
 
 Similarly to `package.path`, modified directories from 'runtimepath' are also
 added to `package.cpath`.  In this case, instead of appending `/lua/?.lua` and
 `/lua/?/init.lua` to each runtimepath, all unique `?`-containing suffixes of
 the existing `package.cpath` are used.  Example:
-`package.path`に似て、'runtimepath'から修正されたディレクトリもまた、
+`package.path`に似て、 'runtimepath'から修正されたディレクトリもまた、
 `package.cpath`に追加されます。この場合、各ランタイムパスごとに`/lua/?.lua`と
 `/lua/?/init.lua` を追加する代わりに、既存の`package.cpath`を含むユニークな`?`
 サフィックスがすべて使用されます。
@@ -125,10 +125,10 @@ Note:
   added and reordering `package.path`/`package.cpath` content if 'runtimepath'
   was reordered.
   'runtimepath'の更新を追跡するために、更新前に追加したパスは記憶され、
-  そして次の更新時に削除されます。そして新しい'runtimepath'に由来する
+  そして次の更新時に削除されます。そして新しい 'runtimepath'に由来する
   すべてのパスは上述のように付加されます。
-  これにより、パスが'runtimepath'から削除されたとき削除を許可し、パスを追加
-  されたときはパスを追加し、'runtimepath'が再整理されたなら、
+  これにより、パスが 'runtimepath'から削除されたとき削除を許可し、パスを追加
+  されたときはパスを追加し、 'runtimepath'が再整理されたなら、
   `package.path`/`package.cpath`を再整理します。
 
 - Although adjustments happen automatically, Nvim does not track current
@@ -136,7 +136,7 @@ Note:
   paths from there you can set 'runtimepath' to trigger an update:
   適用は自動的に発生するけれど、Nvimは、現在の`package.path` または `package.cpath`の
   値を追跡しません。
-  もしいくつかのパスの削除が起こったとき、更新トリガとして'runtimepath'をセットできます。
+  もしいくつかのパスの削除が起こったとき、更新トリガとして 'runtimepath'をセットできます。
       let &runtimepath = &runtimepath
 
 - Skipping paths from 'runtimepath' which contain semicolons applies both to
@@ -146,7 +146,7 @@ Note:
   'runtimepath'からセミコロンを含むパスをスキップすることは、
   `package.path` と `package.cpath`の両方に適用されます。
   シェルで書かれた良くないプラグインのいくつかは、セミコロンを含むパスは動かない
-  かもしれないため、一切'runtimepath'に入れないほうが良いです。
+  かもしれないため、一切 'runtimepath'に入れないほうが良いです。
 
 ------------------------------------------------------------------------------
 LUA PLUGIN EXAMPLE					*lua-require-example*
@@ -241,7 +241,7 @@ command calls. The |lua-stdlib| modules, user modules, and anything else on
 与えられた行範囲にluaのチャンクを実行します。
 luaにおいてはいつも、各チャンクは、自身のスコープ（クロージャ）を持っており、
 そしてグローバル変数だけは、コマンドコール間で共有されます。
-`lua-stdlib`モジュール、ユーザモジュール、その他|lua-package-path|にあるすべてが
+`lua-stdlib`モジュール、ユーザモジュール、その他 |lua-package-path|にあるすべてが
 利用可能です。
 
 The Lua print() function redirects its output to the Nvim message area, with
@@ -273,7 +273,7 @@ Luaのprint()関数は、"¥t"（タブ）の代わりに" "（スペース）�
 			Vimscript内からLuaスクリプトを実行します。
 			{endmarker}はスペースを入れてはいけません。
 			"<<"のあとに[endmarker]を省くことができ、{script}のあとにドット"."
-			を使います（|:append|や|:insert|と類似しています）。
+			を使います（ |:append|や |:insert|と類似しています）。
 
                         Example:
                         >
@@ -382,7 +382,7 @@ Luaのテーブルは辞書とリスト両方として使われます、それ�
    considered to be a dictionary, but this time it is converted to 
    a |msgpack-special-map|.
    少なくとも1つのNULバイトを含む文字列キーで始まるテーブルもまた、リストとして
-   見なされますが、このとき、|msgpack-special-map|に変換されます。
+   見なされますが、このとき、 |msgpack-special-map|に変換されます。
 							*lua-special-tbl*
 4. Table with `vim.type_idx` key may be a dictionary, a list or floating-point 
    value:
@@ -429,7 +429,7 @@ Return value is also always converted. When converting,
 |msgpack-special-dict|s are treated specially.
 注意: `luaeval`の2番目の引数は、VimLからLuaへ変換します（marshalledのため）。
 Luaコンテナへの変更は、VimL内の値へ影響しません。
-返却値もまた常に変換されます。変換時、|msgpack-special-dict|sは特別なものとして
+返却値もまた常に変換されます。変換時、 |msgpack-special-dict|sは特別なものとして
 扱われます。
 
 ==============================================================================
@@ -455,7 +455,7 @@ is equivalent to the Lua chunk >
 
 You can use `v:lua` in "func" options like 'tagfunc', 'omnifunc', etc.
 For example consider the following Lua omnifunc handler: >
-"func"オプション内で、'tagfunc','omnifunc'などのように、
+"func"オプション内で、 'tagfunc','omnifunc'などのように、
 `v:lua`を使用できます。
 例として、Luaのオムニ補完ハンドラについて考えてみましょう。
 
@@ -548,7 +548,7 @@ It is an error to directly invoke `vim.api` functions (except |api-fast|) in
     timer:start(1000, 0, function()
       vim.api.nvim_command('echomsg "test"')
     end)
-`vim.loop`コールバック内で`vim.api`関数（|api-fast|を除く）を直接呼び出すのは、
+`vim.loop`コールバック内で`vim.api`関数（ |api-fast|を除く）を直接呼び出すのは、
 エラーとなります。
 例として、これはエラーとなります。
 
@@ -559,7 +559,7 @@ To avoid the error use |vim.schedule_wrap()| to defer the callback: >
       vim.api.nvim_command('echomsg "test"')
     end))
 
-エラーを避けるために、コールバックの参照に|vim.schedule_wrap()|を
+エラーを避けるために、コールバックの参照に |vim.schedule_wrap()|を
 使ってください。
 
 Example: repeating timer
@@ -675,7 +675,7 @@ doesn't work yet for some filetypes like "cpp") Currently, the parser will be
 retained for the lifetime of a buffer but this is subject to change. A plugin
 should keep a reference to the parser object as long as it wants incremental
 updates.
-`bufnr=0`は現在のバッファのために使われます。`lang`は標準で'filetype'に
+`bufnr=0`は現在のバッファのために使われます。`lang`は標準で 'filetype'に
 なります（これはまだ"cpp"のようないくつかのファイルタイプでは動作しません）。
 現在、バッファの生存時間のあいだは保持されますが、変更される可能性があります。
 プラグインは、増分更新を必要とするあいだは、パーサオブジェクトへの参照を保持し続ける
@@ -812,7 +812,7 @@ vim.api.{func}({...})					*vim.api*
 vim.call({func}, {...})					*vim.call()*
         Invokes |vim-function| or |user-function| {func} with arguments {...}.
         See also |vim.fn|. Equivalent to:
-	|vim-function|または|user-function|関数{func}を、引数{...}つきで呼び出します
+	|vim-function|または |user-function|関数{func}を、引数{...}つきで呼び出します
 	|vim.fn|も確認してください >
             vim.fn[func]({...})
 
@@ -835,7 +835,7 @@ vim.NIL								    *vim.NIL*
 	part of a lua table representing a Dictionary or Array, as it
 	is equivalent to a missing value: `{"foo", nil}` is the same as 
 	`{"foo"}`
-	msgpack-rpcとvimscript内のインタラクション内の|v:null|、そして類似のケースで
+	msgpack-rpcとvimscript内のインタラクション内の |v:null|、そして類似のケースで
 	NILという表現で使われる特別な値です、
 	Luaの`nil`は、辞書または配列として表現されるLuaテーブルの一部として
 	使うことはできません。これは`{"foo", nil}``が `{"foo"}と等価です。`
@@ -847,7 +847,7 @@ vim.rpcnotify({channel}, {method}[, {args}...])		    *vim.rpcnotify()*
 	もし{channel}が0なら、イベントはすべてのチャンネルにブロードキャストされます。
 
 	This function also works in a fast callback |lua-loop-callbacks|.
-        この関数も、|lua-loop-callbacks|コールバック内で高速に動作します。
+        この関数も、 |lua-loop-callbacks|コールバック内で高速に動作します。
 
 vim.rpcrequest({channel}, {method}[, {args}...])	    *vim.rpcrequest()*
 	Sends a request to {channel} to invoke {method} via
@@ -857,7 +857,7 @@ vim.rpcrequest({channel}, {method}[, {args}...])	    *vim.rpcrequest()*
 
 	Note: NIL values as part of the return value is represented as
 	|vim.NIL| special value
-	注: 返り値の部分としてのNIL値は、|vimlNIL|の特殊な値として表現されます。
+	注: 返り値の部分としてのNIL値は、 |vimlNIL|の特殊な値として表現されます。
 
 vim.stricmp({a}, {b})					*vim.stricmp()*
         Compares strings case-insensitively.  Returns 0, 1 or -1 if strings
@@ -894,7 +894,7 @@ vim.str_byteindex({str}, {index}[, {use_utf16}])	*vim.str_byteindex()*
         Invalid UTF-8 and NUL is treated like by |vim.str_byteindex()|. An {index}
         in the middle of a UTF-16 sequence is rounded upwards to the end of that
         sequence.
-	無効なUTF-8とNULは|vim.str_byteindex()|として扱われます。
+	無効なUTF-8とNULは |vim.str_byteindex()|として扱われます。
 	UTF-16シーケンスの内部の{index}は、シーケンスの終端へ切り上げで丸められます。
 
 vim.schedule({callback})				*vim.schedule()*
@@ -908,7 +908,7 @@ vim.fn.{func}({...})					*vim.fn*
         Invokes |vim-function| or |user-function| {func} with arguments {...}.
         To call autoload functions, use the syntax: >
             vim.fn['some#function']({...})
-<	|vim-funcrtion|または引数付き{...}|user-function|{func}を呼び出します。
+<	|vim-funcrtion|または引数付き{...} |user-function|{func}を呼び出します。
 	autoload関数を呼ぶために、は以下のように使用します。
 
         Unlike vim.api.|nvim_call_function| this converts directly between Vim
@@ -922,7 +922,7 @@ vim.fn.{func}({...})					*vim.fn*
 
         Note: |v:null| values as part of the return value is represented as
         |vim.NIL| special value
-	注意: 返却値の一部としての|v:null|の値は、特別な|vim.NIL|の値として
+	注意: 返却値の一部としての |v:null|の値は、特別な |vim.NIL|の値として
 	表現されます。
 
         Note: vim.fn keys are generated lazily, thus `pairs(vim.fn)` only
@@ -939,7 +939,7 @@ vim.type_idx						*vim.type_idx*
 	|lua-special-tbl| で使用するタイプインデックス。 |vim.types| のいずれかの
 	値を指定すると、空のテーブルを入力できます（空のLuaテーブルが空のリストか
 	空の配列かは不明です）および整数を |Float| に強制します。
-	詳細については、|lua-special-tbl| を参照してください。
+	詳細については、 |lua-special-tbl| を参照してください。
 
 vim.val_idx						*vim.val_idx*
 	Value index for tables representing |Float|s.  A table representing 
@@ -949,7 +949,7 @@ vim.val_idx						*vim.val_idx*
               [vim.type_idx] = vim.types.float,
               [vim.val_idx] = 1.0,
             }
-<	表の値インデックスは、|Float|を表しています。浮動小数点値1.0を表す表は次のようになります
+<	表の値インデックスは、 |Float|を表しています。浮動小数点値1.0を表す表は次のようになります
 	
 	See also |vim.type_idx| and |lua-special-tbl|.
 	 |vim.type_idx| and |lua-special-tbl|もご確認ください。	
